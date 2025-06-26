@@ -8,15 +8,11 @@
     <meta name="theme-color" content="#e67e22">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div class="container">
         <header>
             <h1><i class="fas fa-bread-slice"></i>Royal bakes</h1>
-            <div id="sync-status" class="sync-online">
-                <i class="fas fa-cloud"></i> <span>Online</span>
-            </div>
             <div id="shift-status" class="shift-off">Shift: Not Started</div>
         </header>
 
@@ -51,19 +47,12 @@
                     <div id="shift-closed-alert" class="alert alert-warning" style="display: none;">
                         <i class="fas fa-exclamation-triangle"></i> Cannot checkout - shift is not started!
                     </div>
-                    <div id="offline-alert" class="alert alert-warning" style="display: none;">
-                        <i class="fas fa-cloud-slash"></i> Working offline - changes will sync when back online
-                    </div>
                 </div>
             </div>
 
             <!-- Receipts Tab -->
             <div id="receipts" class="tab-content">
                 <h2><i class="fas fa-receipt"></i> Recent Receipts</h2>
-                <div class="sync-controls">
-                    <button id="force-sync-btn" class="btn"><i class="fas fa-sync-alt"></i> Sync Now</button>
-                    <span id="last-sync-time"></span>
-                </div>
                 <div class="date-filter">
                     <input type="date" id="receipt-date-filter">
                     <button id="filter-receipts-btn" class="btn"><i class="fas fa-filter"></i> Filter</button>
@@ -90,9 +79,6 @@
             <!-- Stock Management Tab -->
             <div id="stock" class="tab-content">
                 <h2><i class="fas fa-boxes"></i> Stock Management</h2>
-                <div class="sync-controls">
-                    <button id="sync-stock-btn" class="btn"><i class="fas fa-sync-alt"></i> Sync Stock</button>
-                </div>
                 <div class="stock-form">
                     <input type="text" id="item-name" placeholder="Item Name">
                     <input type="number" id="item-price" placeholder="Price (RWF)" min="0" step="1">
@@ -123,10 +109,6 @@
                 <div id="whatsapp-section" style="display: none;">
                     <button id="send-whatsapp-btn" class="btn"><i class="fab fa-whatsapp"></i> Send Summary via WhatsApp</button>
                 </div>
-                <div id="pending-syncs" style="margin-top: 20px; display: none;">
-                    <h4><i class="fas fa-clock"></i> Pending Sync</h4>
-                    <ul id="pending-syncs-list"></ul>
-                </div>
             </div>
         </main>
     </div>
@@ -142,58 +124,25 @@
         </div>
     </div>
 
-    <!-- Sync Notification -->
-    <div id="sync-notification" class="notification" style="display: none;">
-        <span id="sync-message"></span>
-    </div>
-
-    <script src="script.js"></script>
+    <!-- Add Firebase scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    
+    <!-- Import the Firebase configuration -->
+    <script type="module" src="firebase.js"></script>
+    <!-- Main app script -->
+    <script type="module" src="script.js"></script>
+    
     <script>
-        // Initialize Supabase
-        const supabaseUrl = 'YOUR_SUPABASE_URL';
-        const supabaseKey = 'YOUR_SUPABASE_KEY';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-        // Connection status monitoring
-        function updateConnectionStatus() {
-            const isOnline = navigator.onLine;
-            const syncStatus = document.getElementById('sync-status');
-            const offlineAlert = document.getElementById('offline-alert');
-            
-            if (isOnline) {
-                syncStatus.className = 'sync-online';
-                syncStatus.innerHTML = '<i class="fas fa-cloud"></i> Online';
-                offlineAlert.style.display = 'none';
-                // Attempt to sync any pending changes
-                syncPendingChanges();
-            } else {
-                syncStatus.className = 'sync-offline';
-                syncStatus.innerHTML = '<i class="fas fa-cloud-slash"></i> Offline';
-                offlineAlert.style.display = 'block';
-            }
-        }
-
         // Register service worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
-                    .then(registration => {
-                        console.log('SW registered');
-                        // Check for updates every hour
-                        setInterval(() => {
-                            registration.update();
-                        }, 60 * 60 * 1000);
-                    })
+                    .then(registration => console.log('SW registered'))
                     .catch(err => console.log('SW registration failed: ', err));
             });
         }
-
-        // Event listeners for connection changes
-        window.addEventListener('online', updateConnectionStatus);
-        window.addEventListener('offline', updateConnectionStatus);
-        
-        // Initial status check
-        updateConnectionStatus();
     </script>
 </body>
 </html>
